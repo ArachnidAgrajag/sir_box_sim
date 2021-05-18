@@ -92,9 +92,10 @@ class Box:
     
     def counts(self):
         unique,freq = np.unique(self.p_state,return_counts=True)
-        self.inf_c = freq[np.where(unique==1)]
-        self.sus_c = freq[np.where(unique==0)]
-        self.rec_c = freq[np.where(unique==-1)]
+        none_to_zero = lambda x : [0] if len(x)==0 else x
+        self.inf_c = none_to_zero(freq[np.where(unique==1)])
+        self.sus_c = none_to_zero(freq[np.where(unique==0)])
+        self.rec_c = none_to_zero(freq[np.where(unique==-1)])
         print(self.inf_c,self.sus_c,self.rec_c)
     
     def update_recovered(self,time):
