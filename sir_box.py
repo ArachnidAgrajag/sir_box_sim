@@ -174,10 +174,10 @@ def simulate_vel(i):
 
 
 def simulate_dest():
-    p_x = []
+    """ p_x = []
     d_x = []
     p_y = []
-    d_y = []
+    d_y = [] """
     destsr = dest
     """ for p in people:
         p_x.append((round(p['x'],2),p['id']))
