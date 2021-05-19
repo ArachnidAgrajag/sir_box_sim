@@ -75,35 +75,43 @@ class Box:
                 self.time_inf[i]=self.now
         self.counts()
     
+
     def set_normal_dest(self):
         dest_x = []
         dest_y = []
         for i in range(self.num):
             x = rg.normal(loc=self.p_xy[0][i], scale = rg.uniform(low=0,high=1))
-            y = rg.normal(loc=self.p_xy[0][i], scale = rg.uniform(low=0,high=1))
+            y = rg.normal(loc=self.p_xy[1][i], scale = rg.uniform(low=0,high=1))
             dest_x.append(x)
             dest_y.append(y)
         self.p_dest=np.array([dest_x,dest_y])
+        self.set_dest_bounds()
     
     def move_to_dest(self,speed):
         scale = lambda x : x*speed
-        displacement = scale(self.p_dest - self.p_xy)
-        self.move_people(displacement)
+        disp = self.p_dest - self.p_xy
+        self.move_people(scale(disp))
     
     def counts(self):
         unique,freq = np.unique(self.p_state,return_counts=True)
         none_to_zero = lambda x : [0] if len(x)==0 else x
         self.inf_c = none_to_zero(freq[np.where(unique==1)])
         self.sus_c = none_to_zero(freq[np.where(unique==0)])
-        self.rec_c = none_to_zero(freq[np.where(unique==-1)])
-        print(self.inf_c,self.sus_c,self.rec_c)
+        self.rec_c = none_to_zero(freq[np.where(unique==2)])
+        #print(self.inf_c,self.sus_c,self.rec_c)
     
     def update_recovered(self,time):
         inf_id, = np.where(self.p_state == 1)
         for i in inf_id:
             if self.now-self.time_inf[i]>=time: #time taken to recover 
-                self.p_state[i]=rg.choice([1,-1],p=[0.8,0.2]) #probability of recovery
+                self.p_state[i]=rg.choice([1,2],p=[0.8,0.2]) #probability of recovery
         self.counts()    
 
     def print_val(self):
         print(self.p_xy,self.p_state,self.p_dest)
+    
+    def set_dest_bounds(self):
+        bounce = lambda x, l, u:u - abs(u-l-x % (2*(u-l)))
+        self.p_dest[0] = bounce(self.p_dest[0],self.pos[0],self.pos[0]+self.size[0])
+        self.p_dest[1] = bounce(self.p_dest[1],self.pos[1],self.pos[1]+self.size[1])
+
