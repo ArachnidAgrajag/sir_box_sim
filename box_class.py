@@ -52,7 +52,8 @@ class Box:
         self.time_inf= np.append(self.time_inf,inf_time)
     
     def move_people(self, displacement):
-        bounce = lambda x, l, u:u - abs(u-l-x % (2*(u-l)))
+        bounce = lambda x, l, u:u - abs((u-l)- ((x-l) % (2*(u-l))))
+        #bounce = lambda x, l, u: x
         self.p_xy[0] = bounce(self.p_xy[0] + displacement[0],self.pos[0],self.pos[0]+self.size[0])
         self.p_xy[1] = bounce(self.p_xy[1] + displacement[1],self.pos[1],self.pos[1]+self.size[1]) 
         self.now = self.now + 0.1
@@ -94,7 +95,7 @@ class Box:
     
     def counts(self):
         unique,freq = np.unique(self.p_state,return_counts=True)
-        none_to_zero = lambda x : [0] if len(x)==0 else x
+        none_to_zero = lambda x : 0 if len(x)==0 else x[0]
         self.inf_c = none_to_zero(freq[np.where(unique==1)])
         self.sus_c = none_to_zero(freq[np.where(unique==0)])
         self.rec_c = none_to_zero(freq[np.where(unique==2)])
@@ -111,7 +112,8 @@ class Box:
         print(self.p_xy,self.p_state,self.p_dest)
     
     def set_dest_bounds(self):
-        bounce = lambda x, l, u:u - abs(u-l-x % (2*(u-l)))
+        bounce = lambda x, l, u:u - abs((u-l)- ((x-l) % (2*(u-l))))
+        #bounce = lambda x, l, u: x
         self.p_dest[0] = bounce(self.p_dest[0],self.pos[0],self.pos[0]+self.size[0])
         self.p_dest[1] = bounce(self.p_dest[1],self.pos[1],self.pos[1]+self.size[1])
-
+    
