@@ -5,20 +5,32 @@ from numpy.random import default_rng
 rg = default_rng(1234)
 
 class Box:
-    def __init__(self,size,pos): 
+    def __init__(self,name,size,pos): 
         if type(size) == type(int):
             size = (size,size)
+        self.name = name
         self.size = size
         self.pos = pos
         self.num = 0
         self.p_xy = np.empty((2,0),float)
+        self.p_xy_initial = np.empty((2,0),float)
         self.p_state = np.empty(0,int)
+        self.p_behave = np.empty(0,int)
         self.p_dest = np.empty((2,0),float)
         self.now = 0
         self.time_inf = np.empty(0,float)
         self.inf_c = 0
         self.sus_c = 0
         self.rec_c = 0
+        self.sim_type = 'normal'
+    
+    def set_sim_type(self,s_type):
+        if type(s_type) == str:
+            self.sim_type=s_type
+        else:
+            self.sim_type=s_type[0]
+            self.comm_dest=s_type[1]
+        
 
     def add_people(self,num,inf):
         unique = [""]
@@ -48,6 +60,7 @@ class Box:
                 i += 1
         self.num = self.num + num
         self.p_xy = np.append(self.p_xy,[x_list,y_list],axis=1)
+        self.p_xy_initial = np.copy(self.p_xy)
         self.p_state = np.append(self.p_state,state_l)
         self.time_inf= np.append(self.time_inf,inf_time)
     
@@ -77,12 +90,12 @@ class Box:
         self.counts()
     
 
-    def set_normal_dest(self):
+    def set_normal_dest(self,max):
         dest_x = []
         dest_y = []
         for i in range(self.num):
-            x = rg.normal(loc=self.p_xy[0][i], scale = rg.uniform(low=0,high=1))
-            y = rg.normal(loc=self.p_xy[1][i], scale = rg.uniform(low=0,high=1))
+            x = rg.normal(loc=self.p_xy[0][i], scale = rg.uniform(low=0,high=max))
+            y = rg.normal(loc=self.p_xy[1][i], scale = rg.uniform(low=0,high=max))
             dest_x.append(x)
             dest_y.append(y)
         self.p_dest=np.array([dest_x,dest_y])
@@ -105,7 +118,7 @@ class Box:
         inf_id, = np.where(self.p_state == 1)
         for i in inf_id:
             if self.now-self.time_inf[i]>=time: #time taken to recover 
-                self.p_state[i]=rg.choice([1,2],p=[0.8,0.2]) #probability of recovery
+                self.p_state[i]=rg.choice([1,2],p=[0.9,0.1]) #probability of recovery
         self.counts()    
 
     def print_val(self):
@@ -117,3 +130,13 @@ class Box:
         self.p_dest[0] = bounce(self.p_dest[0],self.pos[0],self.pos[0]+self.size[0])
         self.p_dest[1] = bounce(self.p_dest[1],self.pos[1],self.pos[1]+self.size[1])
     
+    def set_common_dest(self):
+        self.p_dest = np.vstack((np.full(self.num,self.comm_dest[0]),np.full(self.num,self.comm_dest[1])))
+        
+    def set_initial_dest(self):
+        self.p_dest = self.p_xy_initial
+
+    def inc_time(self):
+        self.now+=0.1
+
+
